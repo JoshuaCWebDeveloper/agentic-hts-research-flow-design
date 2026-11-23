@@ -13,46 +13,87 @@ The flow applies wherever useful candidates are scattered across heterogeneous s
 
 **Out of scope for the common core:** domain-specific qualification rules, any particular database or framework, automatic execution of consequential downstream actions, and a claim that a research finding guarantees a real-world result. Domain-specific safety, regulatory, and scientific validation must be supplied by the application.
 
-## 2. The generalized problem
+## 2. Problem: Agentic HTS Research
 
-### 2.1 Opportunity discovery is not opportunity verification
+Most agentic research systems are designed for deep research—investigating a bounded question and synthesizing an answer—while continuous discovery and qualification of candidates requires a different research model.
 
-An initial source hit may identify a candidate without establishing the facts needed to qualify it. The source may be stale, misleading, incomplete, contradictory, or only weakly associated with the candidate. Relevant information may be dispersed across posts, documents, registries, public records, and people. Some eligibility checks are objective; others require interpreting natural language and contextual evidence.
+### 2.1 High-Throughput Screening Research
 
-Examples:
+**Deep research** investigates a question for which the intended result is an answer, explanation, or synthesis. It gathers and evaluates sources, resolves relevant uncertainties, and produces a report or conclusion. Typical questions include “What are the known side effects of acetaminophen?” or “What habitats support Monterey pine?” A research run can finish when its defined question has been answered to the required standard, even if later discoveries might warrant an update.
 
-- A vacancy advertisement may establish that a job existed when posted, not that recruiting remains active.
-- A public software issue may establish that a problem was reported, not that it persists or constitutes work a vendor can perform.
-- A promising molecular assay result may justify additional investigation, not establish efficacy, selectivity, or clinical suitability.
-- A product listing may establish an advertised price, not stock availability, compatibility, or total delivered cost.
+**High-throughput screening (HTS) research** investigates a potentially large, changing, or unbounded population to identify the relatively few candidates that satisfy specified criteria. Its output is a continuing stream or maintained collection of qualified candidates, with evidence supporting each decision. Typical questions include:
 
-All are instances of the same distinction: **candidate discovery supplies hypotheses; qualification requires sufficient evidence for specified claims.**
+- Which currently available jobs meet this search's requirements?
+- Which organizations show current, verifiable evidence of a need for a particular service?
+- Which compounds or specimens warrant further examination against defined experimental criteria?
+- Which products currently satisfy a buyer's requirements for compatibility, availability, and price?
 
-### 2.2 Constraints of the research environment
+HTS research is not necessarily a single pass over a known list. Candidates may emerge from multiple sources indefinitely; previously examined candidates may change; and each candidate may require its own investigation before it can be qualified. Runs and batches are finite, but the research objective need not have a final, exhaustive answer.
 
-- **Scale imbalance:** many potential leads; comparatively few defensible survivors.
-- **Evidence asymmetry:** cheap signals identify candidates, while decisive facts may be expensive to obtain.
-- **Heterogeneity:** formats, terminology, source quality, and identifiers vary.
-- **Temporal change:** facts may cease to be true after publication or verification.
-- **Partial observability:** some required facts cannot be established using accessible sources.
-- **Ambiguity:** signals can support multiple explanations and cannot always be reduced to deterministic tests.
-- **Action dependencies:** a candidate may qualify substantively but still lack an actionable next step.
-- **Research continuity:** investigations must survive agent sessions, be auditable, and avoid repeated work.
+The term *high-throughput screening* is borrowed from scientific screening. Here it describes a domain-independent pattern of **repeated candidate discovery, staged evaluation, and selective deeper investigation**, rather than a claim that all domains use the same experimental methods or volumes.
 
-The optimization target is **qualified, actionable candidates per unit of research effort**, subject to quality and safety thresholds—not raw discoveries, artificial qualification counts, or maximum automated activity.
+| Dimension | Deep research | HTS research |
+| --- | --- | --- |
+| Central question | What is the answer to this question? | Which candidates satisfy these criteria? |
+| Research scope | Bounded by a question and its evidence | Open or changing candidate population |
+| Unit of work | An investigation contributing to a synthesis | An individual candidate or bounded candidate batch |
+| Main output | An answer, explanation, or report | A maintained set or pipeline of qualified candidates |
+| Completion | A run ends when the question is adequately answered | A batch ends, but discovery and reassessment can continue |
+| Quality measure | Accuracy, coverage, and support for conclusions | Qualification correctness, useful yield, coverage, and research efficiency |
 
-## 3. Design principles
+### 2.2 Unique Problems Presented by HTS
 
-1. **Evidence precedes qualification.** Record what a source directly demonstrates separately from interpretations or hypotheses.
-2. **Discovery and qualification are distinct stages.** A discovery strategy does not lower the qualification standard.
-3. **Configuration is authoritative.** Each research program declares its own criteria, methods, evidence rules, and decision authorities; one program's rules do not silently transfer to another.
-4. **Screen cheaply, investigate selectively.** Test inexpensive disqualifiers before costly source collection and synthesis, without discarding ambiguous cases as verified failures.
-5. **Check the current state.** Preserve source publication times and distinguish prior existence from present eligibility; freshness requirements are domain-configured.
-6. **Represent uncertainty explicitly.** Supported, contradicted, unresolved, and inapplicable conditions are not interchangeable.
-7. **Preserve provenance.** Every material claim used to qualify or reject should be traceable to evidence and its assessment.
-8. **Reuse work.** Deduplicate entities and evidence, while keeping program-specific judgments separate.
-9. **Separate findings from authorization.** Agents may perform research actions within policy; consequential pursuit actions have independent approval rules.
-10. **Learn from actual results.** Track screening yield, rejection reasons, research cost, and downstream outcomes; revise strategies through controlled changes.
+- **Open-ended coverage.** The candidate population is not necessarily known, finite, or exhaustively searchable. Source coverage and search bounds must be tracked rather than equated with completeness.
+- **Scale and selectivity.** Many discovered candidates will not qualify. Applying full-depth investigation to every hit is costly; premature elimination can discard valid candidates.
+- **Discovery–qualification gap.** A source hit may only suggest a candidate. Eligibility often depends on additional, candidate-specific facts that are not present in the discovery source.
+- **Uneven evidence cost.** Basic disqualifiers can be inexpensive to check, while decisive facts may require cross-source investigation, identity resolution, or expert interpretation.
+- **Heterogeneous and ambiguous evidence.** Sources differ in structure, terminology, reliability, and attribution. Signals may admit several explanations, and some criteria cannot be evaluated deterministically.
+- **Time-dependent eligibility.** New candidates appear and existing conditions change. Historical evidence of a qualifying condition does not necessarily establish current eligibility.
+- **Incomplete observability.** Some requirements cannot be verified with accessible evidence. Unknown or conflicting findings must remain distinct from confirmed failures and successes.
+- **Recurrent work and duplication.** The same candidate or source may recur across searches and runs. Prior findings should be reused without treating old assessments as permanently valid.
+- **Candidate-specific actionability.** Meeting substantive criteria may not establish a viable next step; additional prerequisites can require separate verification.
+- **Persistent, auditable decisions.** Research spans batches and agent sessions. Assessments, sources, unresolved questions, exclusions, and changes must remain traceable.
+
+The objective is to maximize **correctly qualified, actionable candidates per unit of research effort**, subject to the research program's evidence, coverage, and safety requirements—not the number of search hits or positive classifications.
+
+## 3. Solution: Research Flow
+
+A configurable agentic research flow repeatedly discovers candidates, screens them in stages, verifies the evidence required for qualification, and maintains persistent, reviewable results.
+
+### 3.1 Research Flow Overview
+
+Each **research program** defines its candidate population, eligibility criteria, evidence requirements, discovery strategies, and permitted actions. An agent executes that program in bounded batches, using persistent records so each run builds on prior work.
+
+The flow is:
+
+```text
+Configure program and strategies
+→ Review existing candidates, decisions, and unresolved work
+→ Discover candidates across selected sources
+→ Resolve identities, deduplicate, and screen inexpensive criteria
+→ Investigate promising or unresolved candidates
+→ Verify evidence, currency, and contradictions
+→ Assess criteria and determine qualification
+→ Verify action prerequisites where required
+→ Record results and route for review or authorized action
+→ Reassess when new evidence or conditions warrant it
+```
+
+Discovery strategies determine **where to look**; qualification criteria determine **what counts**. Candidates, source evidence, criterion assessments, and decisions are separate records. A candidate may be screened out, qualified, or left unresolved for further research. Its qualification is specific to the program and the evidence available at the time.
+
+The system favors inexpensive screening before costly investigation, but does not convert missing evidence into a negative finding. Research progresses through explicit tasks and state changes rather than relying on an agent's conversation history. Sections 4–6 define the model, lifecycle, and architecture in detail.
+
+### 3.2 Design Principles
+
+1. **Program-defined rules.** Version criteria, evidence requirements, strategies, and decision authority per research program.
+2. **Separate stages.** Keep discovery, evidence assessment, qualification, and authorization distinct.
+3. **Evidence-backed decisions.** Link material claims and decisions to attributable sources; distinguish observations from inferences.
+4. **Staged effort.** Screen inexpensive requirements first; allocate deeper research to viable or unresolved candidates.
+5. **Time-aware verification.** Record source and assessment dates; check current eligibility against applicable freshness rules.
+6. **Explicit uncertainty.** Represent failed, satisfied, unknown, conflicted, and inapplicable conditions separately.
+7. **Persistent reuse.** Deduplicate shared entities and evidence; preserve program-specific assessments and decision history.
+8. **Controlled actions.** Require the applicable authorization before consequential downstream actions.
+9. **Measured iteration.** Record coverage, yield, research cost, failure reasons, and outcomes to evaluate and refine strategies.
 
 ## 4. Conceptual model
 
